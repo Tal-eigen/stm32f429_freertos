@@ -1,0 +1,60 @@
+#include "stm32f4xx_usart.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_gpio.h"
+//FreeRTOS specific headers
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+
+
+
+struct Serial
+{
+}
+
+void Serial_InitDefault()
+{
+  USART_InitTypeDef USART_Init_Default;
+  NVIC_InitTypeDef NVIC_USART;
+  DMA_InitTypeDef DMA_USART;
+  GPIO_InitTypeDef GPIO_USART;
+
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3,ENABLE);
+
+  //Configure Usart Init Structure
+  obj->USART_Init_Default.USART_BaudRate=9600;
+  obj->USART_Init_Default.USART_WordLength=USART_WordLength_8b;
+  obj->USART_Init_Default.USART_StopBits=USART_StopBits_1;
+  obj->USART_Init_Default.USART_Parity=USART_Parity_Even;
+  obj->USART_Init_Default.USART_HardwareFlowControl=USART_HardwareFlowControl_None;
+  obj->USART_Init_Default.USART_Mode=USART_Mode_Rx | USART_Mode_Tx;
+
+  //Configure NVIC Init Structure
+  obj->NVIC_USART.NVIC_IRQChannel=USART3_IRQn;
+  obj->NVIC_USART.NVIC_IRQChannelCmd=ENABLE;
+  obj->NVIC_USART.NVIC_IRQChannelPreemptionPriority=1;
+  obj->NVIC_USART.NVIC_IRQChannelSubPriority=1;
+
+  //Config GPIO Init Structure
+  obj->GPIO_USART.GPIO_Pin=GPIO_Pin_10;
+  obj->GPIO_USART.GPIO_Mode=GPIO_Mode_AF;
+  obj->GPIO_USART.GPIO_Speed=GPIO_Fast_Speed;
+  obj->GPIO_USART.GPIO_OType=GPIO_OType_PP;
+  obj->GPIO_USART.GPIO_PuPd=GPIO_PuPd_UP;
+
+  GPIO_PinAFConfig(GPIOB,GPIO_PinSource10,GPIO_AF_USART3);
+  GPIO_PinAFConfig(GPIOB,GPIO_PinSource11,GPIO_AF_USART3);
+
+  GPIO_Init(GPIOB,&GPIO_USART);
+  obj->GPIO_USART.GPIO_Pin=GPIO_Pin_11;
+
+  GPIO_Init(GPIOB,&GPIO_USART);
+
+  NVIC_Init(&NVIC_USART);
+
+  USART_Init(USART3,&USART_Init_Default);
+  USART_Cmd(USART3,ENABLE);
+
+}
